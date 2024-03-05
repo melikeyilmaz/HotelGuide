@@ -147,6 +147,68 @@ namespace HotelServiceAPI.UnitTest
         }
 
 
+        [Test]
+        public async Task RemoveContact_Returns_OkResult_When_ContactExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Test için bir iletiþim bilgisi oluþturulur ve veritabanýna eklenir
+                var contact = new Contact
+                {
+                    Id = Guid.NewGuid(),
+                    PhoneNumber = "1234567890",
+                    Email = "test@example.com",
+                    Location = "Test Location"
+                };
+                context.Contacts.Add(contact);
+                await context.SaveChangesAsync();
+
+                // Act
+                // RemoveContact yöntemi çaðrýlýr
+                var result = await controller.RemoveContact(contact.Id);
+
+                // Assert
+                // Sonuç, HTTP 200 OK yanýtý döndürmeli
+                Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            }
+        }
+
+        [Test]
+        public async Task RemoveContact_Returns_NotFound_When_ContactDoesNotExist()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Act
+                // Test için olmayan bir iletiþim bilgisi kimliði belirlenir
+                var contactId = Guid.NewGuid(); // Rastgele bir iletiþim bilgisi kimliði
+
+                // RemoveContact yöntemi çaðrýlýr
+                var result = await controller.RemoveContact(contactId);
+
+                // Assert
+                // Sonuç, HTTP 404 Not Found yanýtý döndürmeli
+                Assert.That(result, Is.InstanceOf<NotFoundResult>());
+            }
+        }
+
+
+
+
+
 
 
 
