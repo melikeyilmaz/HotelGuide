@@ -7,7 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotelModule", "HotelModule"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReportModule", "ReportModule", "{57A58FA5-5A6D-44DA-97E9-91DBE323F12E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelService.API", "HotelService.API\HotelService.API.csproj", "{958C3707-1DD4-4CEB-99C1-3A355B026627}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotelService.API", "HotelService.API\HotelService.API.csproj", "{958C3707-1DD4-4CEB-99C1-3A355B026627}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelService.Data", "HotelService.Data\HotelService.Data.csproj", "{087C4802-296A-4CEF-A932-E1F156BDE1A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,12 +21,17 @@ Global
 		{958C3707-1DD4-4CEB-99C1-3A355B026627}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{958C3707-1DD4-4CEB-99C1-3A355B026627}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{958C3707-1DD4-4CEB-99C1-3A355B026627}.Release|Any CPU.Build.0 = Release|Any CPU
+		{087C4802-296A-4CEF-A932-E1F156BDE1A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087C4802-296A-4CEF-A932-E1F156BDE1A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087C4802-296A-4CEF-A932-E1F156BDE1A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087C4802-296A-4CEF-A932-E1F156BDE1A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{958C3707-1DD4-4CEB-99C1-3A355B026627} = {2A66CE32-7A63-4F3B-960C-92AE632C4981}
+		{087C4802-296A-4CEF-A932-E1F156BDE1A3} = {2A66CE32-7A63-4F3B-960C-92AE632C4981}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4DC49B52-9695-48D5-8337-06F5FD4B9959}
