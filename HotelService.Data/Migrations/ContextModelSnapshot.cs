@@ -24,20 +24,15 @@ namespace HotelService.Data.Migrations
 
             modelBuilder.Entity("HotelService.Data.Entities.Contact", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ContactId")
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("HotelId")
+                    b.Property<Guid>("HotelId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Location")
@@ -61,15 +56,7 @@ namespace HotelService.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AuthorizedName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AuthorizedSurname")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CompanyName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -78,16 +65,61 @@ namespace HotelService.Data.Migrations
                     b.ToTable("Hotels");
                 });
 
+            modelBuilder.Entity("HotelService.Data.Entities.Responsibility", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("HotelId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("Responsibilities");
+                });
+
             modelBuilder.Entity("HotelService.Data.Entities.Contact", b =>
                 {
-                    b.HasOne("HotelService.Data.Entities.Hotel", null)
+                    b.HasOne("HotelService.Data.Entities.Hotel", "Hotel")
                         .WithMany("Contacts")
-                        .HasForeignKey("HotelId");
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("HotelService.Data.Entities.Responsibility", b =>
+                {
+                    b.HasOne("HotelService.Data.Entities.Hotel", "Hotel")
+                        .WithMany("Responsibilities")
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
                 });
 
             modelBuilder.Entity("HotelService.Data.Entities.Hotel", b =>
                 {
                     b.Navigation("Contacts");
+
+                    b.Navigation("Responsibilities");
                 });
 #pragma warning restore 612, 618
         }
