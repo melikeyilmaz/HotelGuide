@@ -277,6 +277,73 @@ namespace HotelServiceAPI.UnitTest
 
 
 
+        [Test]
+        public async Task RemoveResponsibility_Returns_OkResult_When_ResponsibilityExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Test için bir yetkili bilgisi oluþturulur ve veritabanýna eklenir
+                var responsibility = new Responsibility { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Title = "Manager" };
+                context.Responsibilities.Add(responsibility);
+                await context.SaveChangesAsync();
+
+                // Act
+                // RemoveResponsibility yöntemi çaðrýlýr
+                var result = await controller.RemoveResponsibility(responsibility.Id);
+
+                // Assert
+                // Sonuç, HTTP 200 OK yanýtý döndürmeli
+                Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            }
+        }
+
+        [Test]
+        public async Task RemoveResponsibility_Returns_NotFound_When_ResponsibilityDoesNotExist()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Act
+                // Test için olmayan bir yetkili bilgisi kimliði belirlenir
+                var responsibilityId = Guid.NewGuid(); // Rastgele bir sorumlu bilgisi kimliði
+
+                // RemoveResponsibility yöntemi çaðrýlýr
+                var result = await controller.RemoveResponsibility(responsibilityId);
+
+                // Assert
+                // Sonuç, HTTP 404 Not Found yanýtý döndürmeli
+                Assert.That(result, Is.InstanceOf<NotFoundResult>());
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
