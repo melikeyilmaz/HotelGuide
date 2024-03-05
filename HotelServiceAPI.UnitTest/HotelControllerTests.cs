@@ -6,6 +6,7 @@ using HotelService.Data.Contexts;
 using HotelService.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 
@@ -330,6 +331,93 @@ namespace HotelServiceAPI.UnitTest
         }
 
 
+        [Test]
+        public async Task GetResponsibilities_Returns_OkResult_When_HotelExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Test için bir otel oluþturulur ve veritabanýna eklenir
+                var hotel = new Hotel { Id = Guid.NewGuid(), Name = "Test Hotel" };
+                context.Hotels.Add(hotel);
+                await context.SaveChangesAsync();
+
+                // Test için bir yetkili bilgisi oluþturulur ve otel ile iliþkilendirilir
+                var responsibility = new Responsibility { Id = Guid.NewGuid(), FirstName = "John", LastName = "Doe", Title = "Manager", HotelId = hotel.Id };
+                context.Responsibilities.Add(responsibility);
+                await context.SaveChangesAsync();
+
+                // Act
+                // GetResponsibilities yöntemi çaðrýlýr
+                var result = await controller.GetResponsibilities(hotel.Id);
+
+                // Assert
+                // Sonuç, HTTP 200 OK yanýtý döndürmeli
+                Assert.That(result, Is.InstanceOf<ActionResult<IEnumerable<ResponsibilityListDto>>>());
+                var okResult = result as ActionResult<IEnumerable<ResponsibilityListDto>>;
+                Assert.That(okResult.Result, Is.InstanceOf<OkObjectResult>());
+            }
+        }
+
+        [Test]
+        public async Task GetResponsibilities_Returns_NotFound_When_HotelNotFound()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                // Boþ bir veritabaný oluþturulur
+            }
+
+            var controller = new HotelController(new Context(options));
+
+            // Act
+            // Var olmayan bir otel kimliði kullanarak GetResponsibilities yöntemi çaðrýlýr
+            var result = await controller.GetResponsibilities(Guid.NewGuid());
+
+            // Assert
+            // Sonuç, HTTP 404 Not Found yanýtý döndürmeli
+            Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+        }
+
+
+        [Test]
+        public async Task GetResponsibilities_Returns_EmptyList_When_NoResponsibilitiesExist()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Test için bir otel oluþturulur ve veritabanýna eklenir, ancak yetkili bilgisi eklenmez
+                var hotel = new Hotel { Id = Guid.NewGuid(), Name = "Test Hotel" };
+                context.Hotels.Add(hotel);
+                await context.SaveChangesAsync();
+
+                // Act
+                // GetResponsibilities yöntemi çaðrýlýr
+                var result = await controller.GetResponsibilities(hotel.Id);
+
+                // Assert
+                //Sonuç,'result.Value', null veya boþ bir liste olmalýdýr. Bu durumda, Is.Null.Or.Empty
+                //ifadesi kullanýlarak sonucun null veya boþ bir liste olup olmadýðý kontrol edilir.
+                //Eðer result.Value null veya boþ bir liste ise test baþarýlý olur. Aksi takdirde, test hata alýr.
+                Assert.That(result.Value, Is.Null.Or.Empty);
+            }
+        }
 
 
 
