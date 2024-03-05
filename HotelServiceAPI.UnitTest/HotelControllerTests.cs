@@ -206,6 +206,77 @@ namespace HotelServiceAPI.UnitTest
         }
 
 
+        [Test]
+        public async Task AddResponsibility_Returns_OkResult_When_HotelExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Test için bir otel oluþturulur ve veritabanýna eklenir
+                var hotel = new Hotel { Id = Guid.NewGuid(), Name = "Test Hotel" };
+                context.Hotels.Add(hotel);
+                await context.SaveChangesAsync();
+
+                // Test için bir yetkili bilgisi DTO'su oluþturulur
+                var dto = new ResponsibilityAddDto
+                {
+                    HotelId = hotel.Id,
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Title = "Manager"
+                };
+
+                // Act
+                // AddResponsibility yöntemi çaðrýlýr
+                var result = await controller.AddResponsibility(dto);
+
+                // Assert
+                // Sonuç, HTTP 200 OK yanýtý döndürmeli
+                Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
+            }
+        }
+
+
+
+        [Test]
+        public async Task AddResponsibility_Returns_NotFound_When_HotelDoesNotExist()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Act
+                // Test için olmayan bir otel kimliði belirlenir
+                var dto = new ResponsibilityAddDto
+                {
+                    HotelId = Guid.NewGuid(), // Rastgele bir otel kimliði
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Title = "Manager"
+                };
+
+                // AddResponsibility yöntemi çaðrýlýr
+                var result = await controller.AddResponsibility(dto);
+
+                // Assert
+                // Sonuç, HTTP 404 Not Found yanýtý döndürmeli
+                Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+            }
+        }
+
+
+
 
 
 
