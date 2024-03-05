@@ -15,6 +15,8 @@ namespace HotelService.API.Controllers
         {
             _context = context;
         }
+
+        //Otel oluşturma
         [HttpPost("addhotel")]
         public async Task<ActionResult<HotelAddDto>> CreateHotel(HotelAddDto dto)
         {
@@ -29,6 +31,8 @@ namespace HotelService.API.Controllers
 
             return Ok("Otel oluşturma başarılı.");
         }
+
+        //Otel kaldırma
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveHotel(Guid id)
         {
@@ -43,6 +47,8 @@ namespace HotelService.API.Controllers
 
             return Ok("Otel başarıyla kaldırıldı.");
         }
+
+        //Otel iletişim bilgisi ekleme
         [HttpPost("addcontact")]
         public async Task<ActionResult<ContactAddDto>> AddContact(ContactAddDto dto)
         {
@@ -65,6 +71,8 @@ namespace HotelService.API.Controllers
 
             return Ok("İletişim bilgisi başarıyla eklendi.");
         }
+
+        //Otel iletişim bilgisi kaldırma
         [HttpDelete("removecontact/{id}")]
         public async Task<IActionResult> RemoveContact(Guid id)
         {
@@ -79,6 +87,8 @@ namespace HotelService.API.Controllers
 
             return Ok("İletişim bilgisi başarıyla kaldırıldı.");
         }
+
+        //Otel yetkilisi eklenmesi
         [HttpPost("addresponsibility")]
         public async Task<ActionResult<ContactAddDto>> AddResponsibility(ResponsibilityAddDto dto)
         {
@@ -100,6 +110,9 @@ namespace HotelService.API.Controllers
 
             return Ok("Yetkili bilgisi başarıyla eklendi.");
         }
+
+
+        //Otel yetkilisi silinmesi
         [HttpDelete("removeresponsibility/{id}")]
         public async Task<IActionResult> RemoveResponsibility(Guid id)
         {
@@ -114,6 +127,9 @@ namespace HotelService.API.Controllers
 
             return Ok("Sorumlu bilgisi başarıyla kaldırıldı.");
         }
+
+
+        //Otel yetkililerinin listelenmesi
         [HttpGet("getresponsibilities")] 
         public async Task<ActionResult<IEnumerable<ResponsibilityListDto>>> GetResponsibilities(Guid hotelId)
         {
