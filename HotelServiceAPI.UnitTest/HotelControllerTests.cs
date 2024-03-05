@@ -75,5 +75,86 @@ namespace HotelServiceAPI.UnitTest
             }
         }
 
+
+
+        [Test]
+        public async Task AddContact_Returns_OkResult_When_HotelExists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Test için bir otel oluþturulur ve veritabanýna eklenir
+                var hotel = new Hotel { Id = Guid.NewGuid(), Name = "Test Hotel" };
+                context.Hotels.Add(hotel);
+                await context.SaveChangesAsync();
+
+                // Test için bir iletiþim bilgisi DTO'su oluþturulur
+                var dto = new ContactAddDto
+                {
+                    HotelId = hotel.Id,
+                    PhoneNumber = "1234567890",
+                    Email = "test@example.com",
+                    Location = "Test Location"
+                };
+
+                // Act
+                // AddContact yöntemi çaðrýlýr
+                var result = await controller.AddContact(dto);
+
+                // Assert
+                // Sonuç, HTTP 200 OK yanýtý döndürmeli
+                Assert.That(result, Is.InstanceOf<ActionResult<ContactAddDto>>());
+                Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
+            }
+        }
+
+
+        [Test]
+        public async Task AddContact_Returns_NotFound_When_HotelDoesNotExist()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<Context>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            using (var context = new Context(options))
+            {
+                var controller = new HotelController(context);
+
+                // Act
+                // Test için olmayan bir otel kimliði belirlenir
+                var dto = new ContactAddDto
+                {
+                    HotelId = Guid.NewGuid(), // Rastgele bir otel kimliði
+                    PhoneNumber = "1234567890",
+                    Email = "test@example.com",
+                    Location = "Test Location"
+                };
+
+                // AddContact yöntemi çaðrýlýr
+                var result = await controller.AddContact(dto);
+
+                // Assert
+                // Sonuç, HTTP 404 Not Found yanýtý döndürmeli
+                Assert.That(result.Result, Is.InstanceOf<NotFoundResult>());
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
     }
 }
