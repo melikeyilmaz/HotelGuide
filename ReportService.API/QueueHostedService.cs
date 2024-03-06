@@ -1,27 +1,29 @@
-﻿
-using Microsoft.AspNetCore.Connections;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using ReportService.API.Dtos.ReportDto;
+using ReportService.Data.Context;
+using ReportService.Data.Entities;
 using System.Text;
-using System.Threading.Channels;
 
 namespace ReportService.API
 {
     public class QueueHostedService : BackgroundService
     {
         private readonly ILogger<QueueHostedService> logger;
+        private readonly IServiceProvider _serviceProvider;
+
         static IConnection connection;
         private static readonly string hotelsInformation = "hotels_info_queue";
         private static readonly string reportsInformation = "reports_info_queue";
         private static readonly string reportsCreateExchange = "reports_created_exchange_queue";
         static IModel _channel;
         static IModel channel => _channel ?? (_channel = GetChannel());
-        public QueueHostedService(ILogger<QueueHostedService> logger)
+        public QueueHostedService(ILogger<QueueHostedService> logger, IServiceProvider serviceProvider)
         {
 
             this.logger = logger;
+            _serviceProvider = serviceProvider;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -46,25 +48,42 @@ namespace ReportService.API
                 //Bind işlemleri
                 channel.QueueBind(reportsInformation, reportsCreateExchange, reportsInformation);
                 var consumerEvent = new EventingBasicConsumer(channel);
-                List<ReportListDto> dataList = new List<ReportListDto>();
-                consumerEvent.Received += (ch, ea) =>
+                consumerEvent.Received += async (ch, ea) =>
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
+
+                    List<ReportListDto> dataList;
+
                     dataList = JsonConvert.DeserializeObject<List<ReportListDto>>(message);
-
-                    //List<ReportListDto> modelList  = JsonConvert.DeserializeObject<List<ReportListDto>>(Encoding.UTF8.GetString(ea.Body.ToArray()));
-
-
-
+                    List<Report> reportsToAddToQueue = new List<Report>();
+                    using var scope = _serviceProvider.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ReportContext>();
                     foreach (var data in dataList)
                     {
-                        Console.WriteLine("Received data: {0}", data);
-                    }
+                        var report = new Report
+                        {
+                            CreatedDate = DateTime.UtcNow,
+                            HotelCount = data.HotelCount,
+                            Location = data.Location,
+                            ContactCount = data.ContactCount,
+                            Status = "Tamamlandı"
 
-                    //modelJson = "selamiçeşme şubesi";
-                    //WriteToQueue(reportsInformation, modelJson);
+                        };
+
+
+
+                        // DbContext'i kapsamdan al
+
+
+                        dbContext.Reports.Add(report);
+                        reportsToAddToQueue.Add(report);
+
+                    }
+                    await dbContext.SaveChangesAsync();
+                    WriteToQueue(reportsInformation, reportsToAddToQueue);
                 };
+
 
                 channel.BasicConsume(hotelsInformation, true, consumerEvent);
 

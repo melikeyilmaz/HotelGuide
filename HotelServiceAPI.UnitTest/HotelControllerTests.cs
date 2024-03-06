@@ -23,7 +23,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(_options))
+            using (var context = new Context())
             {
                 context.Database.EnsureCreated();
             }
@@ -33,7 +33,7 @@ namespace HotelServiceAPI.UnitTest
         public async Task CreateHotel_ReturnsOk()
         {
             // Arrange
-            using (var context = new Context(_options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
                 var dto = new HotelAddDto { Name = "Test Hotel" };
@@ -60,7 +60,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -86,7 +86,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -124,7 +124,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -156,7 +156,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -189,7 +189,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -215,7 +215,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -253,7 +253,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -286,7 +286,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -313,7 +313,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -339,7 +339,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 
@@ -373,12 +373,12 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 // Boþ bir veritabaný oluþturulur
             }
 
-            var controller = new HotelController(new Context(options));
+            var controller = new HotelController(new Context());
 
             // Act
             // Var olmayan bir otel kimliði kullanarak GetResponsibilities yöntemi çaðrýlýr
@@ -398,7 +398,7 @@ namespace HotelServiceAPI.UnitTest
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
-            using (var context = new Context(options))
+            using (var context = new Context())
             {
                 var controller = new HotelController(context);
 

@@ -18,7 +18,7 @@ namespace HotelService.API.Controllers
     public class HotelController : ControllerBase
     {
         private readonly Context _context;
-        private readonly ILogger<HotelController> _logger;
+        //private readonly ILogger<HotelController> _logger;
         static IConnection connection;
         private static readonly string hotelsInformation = "hotels_info_queue";
         private static readonly string reportsInformation = "reports_info_queue";
@@ -26,10 +26,10 @@ namespace HotelService.API.Controllers
         static IModel _channel;
         static IModel channel => _channel ?? (_channel = GetChannel());
 
-        public HotelController(Context context, ILogger<HotelController> logger)
+        public HotelController(Context context)
         {
             _context = context;
-            _logger = logger;
+           // _logger = logger;
         }
 
         //Otel oluşturma
@@ -163,12 +163,9 @@ namespace HotelService.API.Controllers
             }).ToList();
             return Ok(responsibilities);
         }
+               
 
-
-        /**/
-
-
-
+        //Rapor Talebi İşlemleri
         [HttpGet("getreports")]
         public async Task<IActionResult> GetReports()
         {
@@ -177,19 +174,17 @@ namespace HotelService.API.Controllers
                 connection = GetConnection();
 
 
-
-
             channel.ExchangeDeclare(reportsCreateExchange, "direct");
             // Kuyruğu belirle
             channel.QueueDeclare(queue: hotelsInformation,
-            durable: false,
+                                 durable: false,
                                  exclusive: false,
                                  autoDelete: false);
             //Bind işlemleri
             channel.QueueBind(hotelsInformation, reportsCreateExchange, hotelsInformation);
 
             channel.QueueDeclare(queue: reportsInformation,
-            durable: false,
+                                durable: false,
                                 exclusive: false,
                                 autoDelete: false);
             //Bind işlemleri
@@ -203,18 +198,24 @@ namespace HotelService.API.Controllers
             HotelCount = group.Select(c => c.HotelId).Distinct().Count(),
             ContactCount = group.Count()
         })
-            .ToList();
+        .ToList();
 
             WriteToQueue(hotelsInformation, hotelsWithContactsCount);
 
-            var tcs = new TaskCompletionSource<string>();
+            var tcs = new TaskCompletionSource<List<ReportListDto>>();
 
             var consumerEvent = new EventingBasicConsumer(channel);
             consumerEvent.Received += (ch, ea) =>
             {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
                 var test = Encoding.UTF8.GetString(ea.Body.ToArray());
-                _logger.LogInformation("Alınan model: {@Model}", test);
-                tcs.SetResult(test);
+                List<ReportListDto> dataList;
+
+                dataList = JsonConvert.DeserializeObject<List<ReportListDto>>(message);
+
+
+                tcs.SetResult(dataList);
 
             };
 
@@ -223,19 +224,14 @@ namespace HotelService.API.Controllers
             var result = await tcs.Task;
             return Ok(result);
         }
-        //private async Task<ActionResult> WriteToQueue(string queueName, List<ReportListDto> reportListDto)
-        //{
-        //    var messageArr = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(reportListDto));
 
-        //    channel.BasicPublish(reportsCreatedExchange, queueName, null, messageArr);
-
-        //    return Ok();
-
-        //}
+        //Bir kanal elde etmek için kullanılan işlev.
         private static IModel? GetChannel()
         {
             return connection.CreateModel();
         }
+
+        //RabbitMQ ile bağlantı oluşturma
         private static IConnection GetConnection()
         {
             var connectionFactory = new ConnectionFactory()
@@ -245,6 +241,8 @@ namespace HotelService.API.Controllers
 
             return connectionFactory.CreateConnection();
         }
+
+        //Kuyruğa ekleme işlemi
         private void WriteToQueue(string queueName, object data)
         {
             var messageArr = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data));
@@ -252,3 +250,4 @@ namespace HotelService.API.Controllers
         }
     }
 }
+

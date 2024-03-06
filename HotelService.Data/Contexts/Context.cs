@@ -10,9 +10,6 @@ namespace HotelService.Data.Contexts
 {
     public class Context:DbContext
     {
-        //public Context(DbContextOptions<Context> options) : base(options)
-        //{
-        //}
 
         public DbSet<Hotel> Hotels { get; set; }
         public DbSet<Contact> Contacts { get; set; }
