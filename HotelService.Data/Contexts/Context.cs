@@ -10,19 +10,19 @@ namespace HotelService.Data.Contexts
 {
     public class Context:DbContext
     {
-        public Context(DbContextOptions<Context> options) : base(options)
-        {
-        }
+        //public Context(DbContextOptions<Context> options) : base(options)
+        //{
+        //}
 
         public DbSet<Hotel> Hotels { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Responsibility> Responsibilities { get; set; }
 
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
 
-        //    optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=HotelGuideDb;User Id=postgres;Password=123456789;");
-        //}
+            optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=HotelGuideDb;User Id=postgres;Password=123456789;");
+        }
     }
 }
