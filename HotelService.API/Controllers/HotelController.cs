@@ -3,6 +3,13 @@ using HotelService.Data.Contexts;
 using HotelService.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using RabbitMQ.Client;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Text;
+using System.Threading.Channels;
+using RabbitMQ.Client.Events;
+
 
 namespace HotelService.API.Controllers
 {
@@ -11,9 +18,18 @@ namespace HotelService.API.Controllers
     public class HotelController : ControllerBase
     {
         private readonly Context _context;
+        //private readonly ILogger<HotelController> _logger;
+        static IConnection connection;
+        private static readonly string hotelsInformation = "hotels_info_queue";
+        private static readonly string reportsInformation = "reports_info_queue";
+        private static readonly string reportsCreateExchange = "reports_created_exchange_queue";
+        static IModel _channel;
+        static IModel channel => _channel ?? (_channel = GetChannel());
+
         public HotelController(Context context)
         {
             _context = context;
+           // _logger = logger;
         }
 
         //Otel oluşturma
@@ -144,11 +160,94 @@ namespace HotelService.API.Controllers
                 Title = r.Title,
                 FirstName = r.FirstName,
                 LastName = r.LastName,
-
             }).ToList();
-
             return Ok(responsibilities);
         }
+               
 
+        //Rapor Talebi İşlemleri
+        [HttpGet("getreports")]
+        public async Task<IActionResult> GetReports()
+        {
+
+            if (connection == null || !connection.IsOpen)
+                connection = GetConnection();
+
+
+            channel.ExchangeDeclare(reportsCreateExchange, "direct");
+            // Kuyruğu belirle
+            channel.QueueDeclare(queue: hotelsInformation,
+                                 durable: false,
+                                 exclusive: false,
+                                 autoDelete: false);
+            //Bind işlemleri
+            channel.QueueBind(hotelsInformation, reportsCreateExchange, hotelsInformation);
+
+            channel.QueueDeclare(queue: reportsInformation,
+                                durable: false,
+                                exclusive: false,
+                                autoDelete: false);
+            //Bind işlemleri
+            channel.QueueBind(reportsInformation, reportsCreateExchange, reportsInformation);
+
+            var hotelsWithContactsCount = _context.Contacts
+        .GroupBy(c => c.Location)
+        .Select(group => new
+        {
+            Location = group.Key,
+            HotelCount = group.Select(c => c.HotelId).Distinct().Count(),
+            ContactCount = group.Count()
+        })
+        .ToList();
+
+            WriteToQueue(hotelsInformation, hotelsWithContactsCount);
+
+            var tcs = new TaskCompletionSource<List<ReportListDto>>();
+
+            var consumerEvent = new EventingBasicConsumer(channel);
+            consumerEvent.Received += (ch, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                var test = Encoding.UTF8.GetString(ea.Body.ToArray());
+                List<ReportListDto> dataList;
+
+                dataList = JsonConvert.DeserializeObject<List<ReportListDto>>(message);
+
+
+                tcs.SetResult(dataList);
+
+            };
+
+            channel.BasicConsume(reportsInformation, true, consumerEvent);
+
+            var result = await tcs.Task;
+            return Ok(result);
+        }
+
+        //Bir kanal elde etmek için kullanılan işlev.
+        private static IModel? GetChannel()
+        {
+            return connection.CreateModel();
+        }
+
+        //RabbitMQ ile bağlantı oluşturma
+        private static IConnection GetConnection()
+        {
+            var connectionFactory = new ConnectionFactory()
+            {
+                Uri = new Uri("amqp://guest:guest@localhost:5672/")
+            };
+
+            return connectionFactory.CreateConnection();
+        }
+
+        //Kuyruğa ekleme işlemi
+        private void WriteToQueue(string queueName, object data)
+        {
+            var messageArr = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data));
+            channel.BasicPublish(reportsCreateExchange, queueName, null, messageArr);
+        }
     }
 }
+
